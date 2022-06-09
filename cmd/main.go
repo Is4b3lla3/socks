@@ -8,7 +8,7 @@ import (
 func main() {
 	server := socks.SocksServer{
 		IP:   "localhost",
-		Port: 1099,
+		Port: 1091,
 	}
 	err := server.Run()
 	if err != nil {

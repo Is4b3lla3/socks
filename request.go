@@ -30,7 +30,7 @@ const (
 )
 const (
 	IPV4Length = 4
-	IPV6Length = 6
+	IPV6Length = 16
 	PortLength = 2
 )
 
@@ -94,8 +94,10 @@ func NewClinetRequestMessage(conn io.Reader) (*ClinetRequestMessage, error) {
 			buf = make([]byte, domainLength)
 		}
 		if _, err := io.ReadFull(conn, buf[:domainLength]); err != nil {
-			message.Address = string(buf[:domainLength])
+			return nil, err
 		}
+		buff := buf[:domainLength]
+		message.Address = string(buff)
 	}
 	//读取port
 	if _, err := io.ReadFull(conn, buf[:PortLength]); err != nil {
