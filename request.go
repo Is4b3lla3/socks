@@ -49,7 +49,7 @@ const (
 )
 
 func NewClinetRequestMessage(conn io.Reader) (*ClinetRequestMessage, error) {
-	buf := make([]byte, IPV4Length)
+	buf := make([]byte, 4)
 	//read version,command,reserved,addresstype
 	if _, err := io.ReadFull(conn, buf); err != nil {
 		return nil, err

@@ -30,7 +30,7 @@ func NewClientAuthMessage(conn io.Reader) (*ClientAuthMessage, error) {
 	if buf[0] != SOCKSVersion {
 		return nil, ErrorVersionNotSupported
 	}
- 
+
 	//读取nmethods
 	nmethods := buf[1]
 	buf = make([]byte, nmethods)
