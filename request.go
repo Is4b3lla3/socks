@@ -119,7 +119,7 @@ func WriteRequestSuccessMessage(conn io.Writer, ip net.IP, port uint16) error {
 	if err != nil {
 		return err
 	}
-	//weite bind ip
+	//write bind ip
 	if _, err := conn.Write(ip); err != nil {
 		return err
 	}

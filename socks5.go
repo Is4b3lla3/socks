@@ -9,7 +9,7 @@ import (
 )
 
 type Server interface {
-	//运行
+	//run socks5 server
 	Run() error
 }
 
@@ -34,7 +34,7 @@ var (
 func (s *SocksServer) Run() error {
 	//循环处理客户端请求
 	address := fmt.Sprintf("%s:%d", s.IP, s.Port)
-	//lcalhost:1080
+	//监听 lcalhost:1080
 	listener, err := net.Listen("tcp", address)
 	if err != nil {
 		return err
@@ -105,7 +105,7 @@ func request(conn io.ReadWriter) (io.ReadWriteCloser, error) {
 	if err != nil {
 		return nil, err
 	}
-	//判断是否支持cmd 本例只支持TCP（connect）
+	//判断是否支持cmd 只支持TCP（connect）
 	if message.Cmd != CmdConnect {
 		return nil, WriteRequesFailureMessage(conn, ReplyCommandNotSupported)
 	}

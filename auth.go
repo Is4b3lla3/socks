@@ -20,7 +20,7 @@ type Method = byte
 
 //从一个tcp流中读取报文产生ClinetAuthMessage对象
 func NewClientAuthMessage(conn io.Reader) (*ClientAuthMessage, error) {
-	//读取version和nmethods
+	//读取version
 	buf := make([]byte, 2)
 	_, err := io.ReadFull(conn, buf)
 	if err != nil {
@@ -30,8 +30,8 @@ func NewClientAuthMessage(conn io.Reader) (*ClientAuthMessage, error) {
 	if buf[0] != SOCKSVersion {
 		return nil, ErrorVersionNotSupported
 	}
-
-	//read methods
+ 
+	//读取nmethods
 	nmethods := buf[1]
 	buf = make([]byte, nmethods)
 	_, err = io.ReadFull(conn, buf)
