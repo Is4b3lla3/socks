@@ -113,6 +113,7 @@ func request(conn io.ReadWriter) (io.ReadWriteCloser, error) {
 	if message.AddrType == IPV6Length {
 		return nil, WriteRequesFailureMessage(conn, ReplyAddressTyeNotSupported)
 	}
+	//command和addrtype都支持
 	// 开始请求访问目标服务 socks可代理任意tcp流量
 	address := fmt.Sprintf("%s:%d", message.Address, message.Port)
 	targetConn, err := net.Dial("tcp", address)
