@@ -132,7 +132,7 @@ func request(conn io.ReadWriter) (io.ReadWriteCloser, error) {
 }
 
 //转发函数（TCP）
-// 2个 conn 一个cline与socks server 一个socks server 与target
+// 2个 conn 一个client与socksserver 一个socksserver与 target
 func forward(conn io.ReadWriter, targetConn io.ReadWriteCloser) error {
 	defer targetConn.Close()
 	var err error
