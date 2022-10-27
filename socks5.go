@@ -121,16 +121,18 @@ func request(conn io.ReadWriter) (io.ReadWriteCloser, error) {
 		//返回错误信息，这里没有针对性的返回相应的reply，统一写成了拒绝
 		return nil, WriteRequesFailureMessage(conn, ReplyConnectionRefuesd)
 	}
-	// Send Success reply
+	// local addr & port
 	addrValue := targetConn.LocalAddr()
 	addr := addrValue.(*net.TCPAddr)
 	//与目标网站连接成功后，返回给客户端连接信息
+	// Send Success reply
 	return targetConn, WriteRequestSuccessMessage(conn, addr.IP, uint16(addr.Port))
 
 	return nil, nil
 }
 
 //转发函数（TCP）
+// 2个 conn 一个cline与socks server 一个socks server 与target
 func forward(conn io.ReadWriter, targetConn io.ReadWriteCloser) error {
 	defer targetConn.Close()
 	var err error
