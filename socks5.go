@@ -123,6 +123,7 @@ func request(conn io.ReadWriter) (io.ReadWriteCloser, error) {
 	// Send Success reply
 	addrValue := targetConn.LocalAddr()
 	addr := addrValue.(*net.TCPAddr)
+	//与目标网站连接成功后，返回给客户端连接信息
 	return targetConn, WriteRequestSuccessMessage(conn, addr.IP, uint16(addr.Port))
 
 	return nil, nil

@@ -48,6 +48,7 @@ const (
 	ReplyAddressTyeNotSupported
 )
 
+// 读取客户端发来的请求过程信息
 func NewClinetRequestMessage(conn io.Reader) (*ClinetRequestMessage, error) {
 	buf := make([]byte, 4)
 	//read version,command,reserved,addresstype
@@ -69,7 +70,7 @@ func NewClinetRequestMessage(conn io.Reader) (*ClinetRequestMessage, error) {
 	}
 	//代码运行到这里，4个字段是有效的
 	//--------------------------
-	//read address and port
+	//read address and port to buffer
 	message := ClinetRequestMessage{
 		Cmd:      command,
 		AddrType: addresstype}
@@ -109,6 +110,9 @@ func NewClinetRequestMessage(conn io.Reader) (*ClinetRequestMessage, error) {
 }
 
 //请求成功发送函数
+/*
+向客户端发送连接成功后的目标主机信息报文
+*/
 func WriteRequestSuccessMessage(conn io.Writer, ip net.IP, port uint16) error {
 	addressType := TypeIPV4
 	if len(ip) == IPV6Length {
