@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	ip := flag.String("ip", "127.0.0.1", "请输入监听地址")
+	ip := flag.String("ip", "0.0.0.0", "请输入监听地址")
 	port := flag.Int("port", 1089, "请输入端口号")
 	username := flag.String("username", "", "用户名")
 	password := flag.String("password", "", "密码")
@@ -40,7 +40,8 @@ func main() {
 			AuthMethod: socks.MethodNoAuth,
 		},
 	}
-	log.Println("Usage: ./socks -ip=192.168.3.1 -port=1080")
+	log.Println("Usage: ./socks -ip=0.0.0.0 -port=1080 -username=admin -password=admin@123")
+	log.Println("Usage: ./socks -ip=0.0.0.0 -port=1080")
 	log.Printf("Socks5Server is run on %s:%d", server.IP, server.Port)
 	if len(*username) == 0 {
 		err := server.Run()
