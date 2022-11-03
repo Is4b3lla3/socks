@@ -15,23 +15,46 @@ type Server interface {
 
 //实现socks5 server
 type SocksServer struct {
-	IP   string
-	Port int
+	IP       string
+	Port     int
+	Username string
+	Password string
+	Config   *Config
+}
+type Config struct {
+	AuthMethod      Method
+	PasswordChecker func(Username string, Password string) bool
 }
 
 const SOCKSVersion = 0x05
 const ReservedField = 0x00
 
 var (
-	ErrorVersionNotSupported     = errors.New("protocol version not support")
-	ErrorCommandNotSupported     = errors.New("Command not support")
-	ErrorInvalidReservedField    = errors.New("InvalidReservedField!")
-	ErrorAddressNotSupported     = errors.New("address not supported")
-	ErrorAddressTypeNotSupported = errors.New("addresstype not supported,only support ipv4")
+	ErrorVersionNotSupported       = errors.New("protocol version not supported")
+	ErrorMethodVersionNotSupported = errors.New("sub-negotiation method version not supported")
+	ErrorCommandNotSupported       = errors.New("Command not supported")
+	ErrorInvalidReservedField      = errors.New("InvalidReservedField!")
+	ErrorAddressNotSupported       = errors.New("address not supported")
+	ErrorAddressTypeNotSupported   = errors.New("addresstype not supported,only support ipv4")
 )
+
+func ServerConfig(config *Config) error {
+	// 初始化server 配置
+	if config.AuthMethod == MethodPassword && config.PasswordChecker == nil {
+		return ErrorPasswordCheckerNotSet
+	}
+	return nil
+}
 
 //实现Server接口
 func (s *SocksServer) Run() error {
+	if len(s.Username) != 0 {
+		// 密码认证开启
+		if err := ServerConfig(s.Config); err != nil {
+			return err
+		}
+	}
+
 	//循环处理客户端请求
 	address := fmt.Sprintf("%s:%d", s.IP, s.Port)
 	//监听 lcalhost:1080
@@ -52,7 +75,7 @@ func (s *SocksServer) Run() error {
 		// 携程调用handleconnect函数无法捕获error，嵌套个匿名函数处理
 		go func() {
 			defer conn.Close()
-			err := handleConnection(conn)
+			err := handleConnection(conn, s.Config)
 			if err != nil {
 				log.Printf("handle connection failed from  %s: %s", conn.RemoteAddr(), err)
 			}
@@ -62,9 +85,9 @@ func (s *SocksServer) Run() error {
 }
 
 //handle request
-func handleConnection(conn net.Conn) error {
+func handleConnection(conn net.Conn, config *Config) error {
 	// 协商
-	if err := auth(conn); err != nil {
+	if err := auth(conn, config); err != nil {
 		return err
 	}
 	// 请求
@@ -79,15 +102,16 @@ func handleConnection(conn net.Conn) error {
 }
 
 //协商函数
-func auth(conn net.Conn) error {
+func auth(conn io.ReadWriter, config *Config) error {
+	//read clinet auth message
 	clientmessage, err := NewClientAuthMessage(conn)
 	if err != nil {
 		return err
 	}
-	//目前只支持no-auth
+	//遍历auth method 是否支持
 	var acceptable bool
 	for _, method := range clientmessage.Methods {
-		if method == MethodNoAuth {
+		if method == config.AuthMethod {
 			acceptable = true
 		}
 
@@ -96,7 +120,28 @@ func auth(conn net.Conn) error {
 		NewServerAuthMessage(conn, MethodNoAcceptable)
 		return errors.New("method not support")
 	}
-	return NewServerAuthMessage(conn, MethodNoAuth)
+	//
+	if err := NewServerAuthMessage(conn, config.AuthMethod); err != nil {
+		return err
+	}
+	// password 认证
+	if config.AuthMethod == MethodPassword {
+		message, err := NewClientPasswordMessage(conn)
+		if err != nil {
+			return nil
+		}
+		if !config.PasswordChecker(message.Username, message.Password) {
+			//认证失败
+			WriteServerPasswordMessage(conn, PasswordAuthFailure)
+			return ErrorPasswordAuthFailure
+		}
+		//认证成功
+		if err := WriteServerPasswordMessage(conn, PasswordAuthSucces); err != nil {
+			return err
+		}
+
+	}
+	return nil
 }
 
 //服务端读取客户端请求函数
